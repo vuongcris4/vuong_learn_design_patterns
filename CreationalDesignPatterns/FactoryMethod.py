@@ -77,3 +77,86 @@ if __name__ == "__main__":
     print("Tuyển dụng cho vị trí Chuyên viên Marketing:")
     # ... nhưng kết quả lại khác nhau vì logic đã được ủy quyền cho lớp con.
     mkt_manager.take_interview()
+
+# ---------------------------------------- VD2 ----------------------------------
+
+from abc import ABC, abstractmethod
+
+# --- 1. Product Interface (Sản phẩm trừu tượng) ---
+# Định nghĩa các đặc tính chung của một món đồ nội thất.
+class IFurniture(ABC):
+    @abstractmethod
+    def get_description(self):
+        """Mô tả sản phẩm."""
+        pass
+
+# --- 2. Concrete Products (Sản phẩm cụ thể) ---
+# Các loại nội thất cụ thể mà xưởng có thể sản xuất.
+class Chair(IFurniture):
+    def get_description(self):
+        return "Đây là một chiếc ghế gỗ sồi 4 chân."
+
+class Table(IFurniture):
+    def get_description(self):
+        return "Đây là một chiếc bàn cafe hình tròn."
+
+# --- 3. Creator (Lớp cha trừu tượng - Xưởng sản xuất) ---
+# Lớp này định nghĩa quy trình sản xuất chung và một factory method trừu tượng.
+class FurnitureFactory(ABC):
+    """
+    Lớp Creator trừu tượng.
+    Nó không biết sẽ tạo ra loại nội thất nào.
+    """
+
+    # Đây là Factory Method.
+    @abstractmethod
+    def create_furniture(self) -> IFurniture:
+        """Phương thức này sẽ được các lớp con triển khai để tạo sản phẩm."""
+        pass
+
+    # Phương thức nghiệp vụ sử dụng factory method.
+    def produce_and_ship(self):
+        """
+        Quy trình sản xuất và vận chuyển chung.
+        Nó gọi factory method để lấy sản phẩm, sau đó làm việc với sản phẩm đó.
+        """
+        print("Bắt đầu quy trình sản xuất...")
+        # self.create_furniture() sẽ gọi phiên bản của lớp con.
+        product = self.create_furniture()
+        print(f"Sản phẩm đã được tạo: {product.get_description()}")
+        print("Đóng gói và vận chuyển sản phẩm đến khách hàng.")
+
+# --- 4. Concrete Creators (Các lớp con cụ thể - Phân xưởng) ---
+# Các lớp này sẽ triển khai factory method để tạo ra sản phẩm cụ thể.
+class ChairFactory(FurnitureFactory):
+    """
+    Phân xưởng chuyên sản xuất ghế.
+    """
+    def create_furniture(self) -> IFurniture:
+        print("Phân xưởng ghế: Nhận lệnh sản xuất một chiếc ghế.")
+        return Chair()
+
+class TableFactory(FurnitureFactory):
+    """
+    Phân xưởng chuyên sản xuất bàn.
+    """
+    def create_furniture(self) -> IFurniture:
+        print("Phân xưởng bàn: Nhận lệnh sản xuất một chiếc bàn.")
+        return Table()
+
+
+# --- Client Code (Mã khách hàng sử dụng xưởng) ---
+if __name__ == "__main__":
+    # Client quyết định sẽ sử dụng "phân xưởng" nào.
+    chair_factory = ChairFactory()
+    table_factory = TableFactory()
+
+    print("Khách hàng đặt một chiếc ghế:")
+    # Client gọi cùng một phương thức `produce_and_ship`...
+    chair_factory.produce_and_ship()
+
+    print("\n" + "="*40 + "\n")
+
+    print("Khách hàng đặt một chiếc bàn:")
+    # ... nhưng kết quả lại khác nhau vì logic tạo sản phẩm đã được ủy quyền cho lớp con.
+    table_factory.produce_and_ship()
